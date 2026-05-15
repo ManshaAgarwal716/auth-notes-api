@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime
 import sqlalchemy.dialects.postgresql as pg
 class User(SQLModel,table=True):
+    __tablename__="users"   
     uid: uuid.UUID = Field(default_factory=uuid.uuid4, sa_column=Column(pg.UUID(as_uuid=True), primary_key=True))
     username: str = Field(index=True, unique=True)
     email: str = Field(index=True, unique=True)
