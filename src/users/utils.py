@@ -26,7 +26,7 @@ def decode_access_token(token:str)->dict:
     except JWTError as e:
         logging.error(f"Token decoding error: {e}")
         return None
-    
+
 
 
 

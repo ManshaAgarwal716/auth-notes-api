@@ -6,6 +6,8 @@ from fastapi import (
     HTTPException,
     status
 )
+from .models import User
+from .dependencies import get_current_user,RollChecker
 
 from fastapi.responses import JSONResponse
 
@@ -29,6 +31,7 @@ from src.users.schemas import (
 from .dependencies import (
     RefreshTokenBearer
 )
+roll=RollChecker(allowed_roles=["admin","user"])
 
 router = APIRouter(
     prefix="/users",
@@ -145,3 +148,8 @@ async def refresh_token(
             "access_token": new_access_token
         }
     )
+@router.get("/me",response_model=UserModel,dependencies=[Depends(roll)])
+def get_current_user(user:User=Depends(get_current_user)):
+    return user
+            
+       
