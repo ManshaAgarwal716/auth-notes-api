@@ -2,7 +2,7 @@ from fastapi.security import HTTPBearer
 from fastapi import Request, HTTPException, status, Depends
 from typing import List
 from .models import User
-
+from src.db.redis import is_token_blocked
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.db.main import get_session
@@ -32,6 +32,8 @@ class TokenBearer(HTTPBearer):
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid or expired token"
             )
+        if await is_token_blocked(token_data['jti']):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Logged out")
 
         self.verify_token_data(token_data)
 

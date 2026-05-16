@@ -7,8 +7,8 @@ from fastapi import (
     status
 )
 from .models import User
-from .dependencies import get_current_user,RollChecker
-
+from .dependencies import get_current_user,RollChecker,AccessTokenBearer
+from src.db.redis import add_token_to_blocklist,is_token_blocked
 from fastapi.responses import JSONResponse
 
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -31,6 +31,7 @@ from src.users.schemas import (
 from .dependencies import (
     RefreshTokenBearer
 )
+
 roll=RollChecker(allowed_roles=["admin","user"])
 
 router = APIRouter(
@@ -151,5 +152,15 @@ async def refresh_token(
 @router.get("/me",response_model=UserModel,dependencies=[Depends(roll)])
 def get_current_user(user:User=Depends(get_current_user)):
     return user
-            
+@router.get("/logout",dependencies=[Depends(AccessTokenBearer())])
+async def logout(token_data:dict):
+    jti=token_data.get("jti")
+    await add_token_to_blocklist(jti)
+    return JSONResponse(
+        content={
+            "message": "Logged out successfully"
+        },status_code=status.HTTP_200_OK
+    )
+
+
        
