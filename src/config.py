@@ -4,6 +4,8 @@ class Settings(BaseSettings):
     SYNC_DATABASE_URL:str
     JWT_SECRET:str
     JWT_ALGORITHM:str
+    REDIS_HOST:str
+    REDIS_PORT:int
     model_config=SettingsConfigDict(env_file=".env",extra="ignore")
 set=Settings()
 

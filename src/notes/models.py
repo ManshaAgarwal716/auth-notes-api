@@ -1,6 +1,7 @@
-from sqlmodel import Field, SQLModel,Column,Field
+from sqlmodel import Field, SQLModel,Column,Field,Relationship
 from sqlalchemy.dialects import postgresql as pg
 import uuid
+from typing import Optional  
 from datetime import datetime
 
 class Note(SQLModel,table=True):
@@ -15,3 +16,8 @@ class Note(SQLModel,table=True):
     )
     created_at:datetime=Field(sa_column=Column(pg.TIMESTAMP,default=datetime.now))
     updated_at:datetime=Field(sa_column=Column(pg.TIMESTAMP,default=datetime.now))
+    user:Optional["User"]= Relationship(
+        back_populates="notes"
+    )
+    def __repr__(self)->str:
+        return f"<Note {self.title}>"
