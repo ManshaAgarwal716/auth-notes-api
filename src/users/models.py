@@ -15,6 +15,6 @@ class User(SQLModel,table=True):
     is_verified:bool=Field(default=False)
     created_at:datetime=Field(sa_column=Column(pg.TIMESTAMP,default=datetime.now))
     updated_at:datetime=Field(sa_column=Column(pg.TIMESTAMP,default=datetime.now))
-    notes: Optional["Note"] = Relationship(back_populates="user")
+    notes: list["Note"] = Relationship(back_populates="user")
     def __repr__(self)->str:
         return f"<User {self.username}>"

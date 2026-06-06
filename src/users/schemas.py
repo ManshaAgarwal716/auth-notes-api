@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field
 import uuid
 from datetime import datetime
+from src.notes.schema import NoteModel
 class UserModel(BaseModel):
     uid:uuid.UUID
     username:str
@@ -11,6 +12,8 @@ class UserModel(BaseModel):
     is_verified:bool
     created_at:datetime
     updated_at:datetime
+class UserNote(UserModel):
+    notes:list[Note]
 class UserCreate(BaseModel):
     username:str=Field(max_length=8)
     email:str=Field(max_length=40)

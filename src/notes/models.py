@@ -21,3 +21,4 @@ class Note(SQLModel,table=True):
     )
     def __repr__(self)->str:
         return f"<Note {self.title}>"
+    

@@ -152,8 +152,8 @@ async def refresh_token(
 @router.get("/me",response_model=UserModel,dependencies=[Depends(roll)])
 def get_current_user(user:User=Depends(get_current_user)):
     return user
-@router.get("/logout",dependencies=[Depends(AccessTokenBearer())])
-async def logout(token_data:dict):
+@router.get("/logout")
+async def logout(token_data:dict=Depends(AccessTokenBearer())):
     jti=token_data.get("jti")
     await add_token_to_blocklist(jti)
     return JSONResponse(
