@@ -4,6 +4,7 @@ import uuid
 from jose import jwt, JWTError
 import logging
 from src.config import set
+from itsdangerous import URLSafeTimedSerializer 
 pswd_context=CryptContext(schemes=["bcrypt"],deprecated="auto")
 ACCESS_TOKEN_EXPIRY=3600
 def generate_password_hash(password:str)->str:
@@ -26,7 +27,18 @@ def decode_access_token(token:str)->dict:
     except JWTError as e:
         logging.error(f"Token decoding error: {e}")
         return None
-
+seralizer=URLSafeTimedSerializer(
+    secret_key=set.JWT_SECRET,salt="email-confirmation-salt")
+def generate_email_token(email:str)->str:
+    token=seralizer.dumps(email)
+    return token
+def decode_email_token(token:str,expiry:int=3600)->str:
+    try:
+        email=seralizer.loads(token,max_age=expiry)
+        return email
+    except Exception as e:
+        logging.error(f"Email token decoding error: {str(e)}")
+        return None
 
 
 

@@ -7,6 +7,7 @@ from fastapi import (
     status
 )
 from .models import User
+from .utils import generate_email_token,decode_email_token
 from .dependencies import get_current_user,RollChecker,AccessTokenBearer
 from src.db.redis import add_token_to_blocklist,is_token_blocked
 from fastapi.responses import JSONResponse
@@ -72,9 +73,46 @@ async def signup(
         user_data,
         session
     )
+    token = generate_email_token({"email":email})
+    link=f"http://localhost:8000/users/verify-email?token={token}"
+    html_message = f"""
+    <h1>Welcome to FastAPI Notes App</h1>
+    <p>Hi {new_user.email},</p>
+    <p>Please verify your email address to start using our FastAPI Notes application. Click the link below to verify your email:</p>
+    <a href={link}>Verify Email</a>
+    <p>Thank you for signing up for our FastAPI Notes application! We're excited to
+    have you on board. You can now create, manage, and organize your notes with ease.</p>
+    <p>To get started, simply log in to your account and start creating notes. If you have any questions or need assistance, feel free to reach out to our support team.</p>
+    <p>Happy note-taking!</p>
+    """
+    message=create_message(subject="Verify Your Email",body=html_message,recipients=[new_user.email])
+    await mail.send_message(message)
 
-    return new_user
-
+    return {
+        "message": "User created successfully. Please check your email to verify your account.",
+        "user":new_user
+    }
+@router.get("/verify-email/{token}")
+async def verify_email(token:str,session:AsyncSession=Depends(get_session)):
+    email=decode_email_token(token)
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired token"
+        )
+    user=await user_service.get_user_by_email(email,session)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    if user.is_verified:
+        return {"message":"Email already verified"}
+    user.is_verified=True
+    session.add(user)
+    await session.commit()
+    await session.refresh(user)
+    return {"message":"Email verified successfully" }
 
 @router.post("/login")
 async def login(
