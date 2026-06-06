@@ -10,6 +10,8 @@ from .models import User
 from .dependencies import get_current_user,RollChecker,AccessTokenBearer
 from src.db.redis import add_token_to_blocklist,is_token_blocked
 from fastapi.responses import JSONResponse
+from src.users.schemas import UserCreate,UserModel,UserLogin,EmailModel
+from src.mail import create_message,mail
 
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -161,6 +163,10 @@ async def logout(token_data:dict=Depends(AccessTokenBearer())):
             "message": "Logged out successfully"
         },status_code=status.HTTP_200_OK
     )
-
-
-       
+@router.post("/send-email")
+async def send_email(emails:EmailModel):
+    emails=emails.emails
+    html="<h1>Test Email from FastAPI Notes App</h1><p>This is a test email sent from the FastAPI Notes application.</p>"
+    message=create_message(subject="Verify Your Email",body=html,recipients=emails)
+    await mail.send_message(message)
+    return {"message":"Emails sent successfully"}
